@@ -4,9 +4,6 @@
 __all__ = ['FileContent', 'DEFAULT_FILTER_PATTERN', 'DownloadStorage']
 
 # %% ../nbs/00_core.ipynb 3
-from sec_edgar_downloader import Downloader
-
-# %% ../nbs/00_core.ipynb 4
 import tempfile
 import shutil
 from pathlib import Path
