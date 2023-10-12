@@ -4,6 +4,6 @@ project:
 website:
   title: "sec-downloader"
   site-url: "https://Elijas.github.io/sec-downloader"
-  description: "An enhanced version of sec-edgar-downloader with caching capabilities and in-memory data retrieval. Designed for efficient SEC EDGAR document processing."
+  description: "Useful extensions for sec-edgar-downloader."
   repo-branch: main
   repo-url: "https://github.com/Elijas/sec-downloader"
