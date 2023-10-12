@@ -33,6 +33,7 @@ storage = DownloadStorage()
 with storage as path:
     dl = Downloader("MyCompanyName", "email@example.com", path)
     dl.get("10-K", "GOOG", limit=2)
+# all files are now deleted and only stored in memory
 
 for path, content in storage.get_file_contents():
     print(f"Path: {path}\nContent [len={len(content)}]: {content[:30]}...\n")
@@ -54,6 +55,7 @@ storage = DownloadStorage(filter_pattern=ONLY_HTML)
 with storage as path:
     dl = Downloader("MyCompanyName", "email@example.com", path)
     dl.get("10-Q", "AAPL", limit=1, download_details=True)
+# all files are now deleted and only stored in memory
 
 content = storage.get_file_contents()[0].content
 print(f"{content[:50]}...")
