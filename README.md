@@ -17,8 +17,8 @@ pip install sec_downloader
 
 ## Features
 
-- Instead of being saved to disk, files are directly downloaded into
-  memory.
+- Files are downloaded to a temporary folder, immediately read into
+  memory, and then deleted.
 - Use “glob” pattern to select which files are read to memory.
 
 ## How to use
