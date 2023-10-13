@@ -26,12 +26,12 @@ pip install sec_downloader
 Downloading multiple documents:
 
 ``` python
-from sec_edgar_downloader import Downloader
+from sec_edgar_downloader import Downloader as SecEdgarDownloader
 from sec_downloader import DownloadStorage
 
 storage = DownloadStorage()
 with storage as path:
-    dl = Downloader("MyCompanyName", "email@example.com", path)
+    dl = SecEdgarDownloader("MyCompanyName", "email@example.com", path)
     dl.get("10-K", "GOOG", limit=2)
 # all files are now deleted and only stored in memory
 
@@ -53,12 +53,24 @@ ONLY_HTML = "**/*.htm*"
 
 storage = DownloadStorage(filter_pattern=ONLY_HTML)
 with storage as path:
-    dl = Downloader("MyCompanyName", "email@example.com", path)
+    dl = SecEdgarDownloader("MyCompanyName", "email@example.com", path)
     dl.get("10-Q", "AAPL", limit=1, download_details=True)
 # all files are now deleted and only stored in memory
 
 content = storage.get_file_contents()[0].content
 print(f"{content[:50]}...")
+```
+
+    <?xml version="1.0" ?><!--XBRL Document Created wi...
+
+Or simply:
+
+``` python
+from sec_downloader import Downloader
+
+dl = Downloader("MyCompanyName", "email@example.com")
+html = dl.get_latest_html("10-Q", "AAPL")
+print(f"{html[:50]}...")
 ```
 
     <?xml version="1.0" ?><!--XBRL Document Created wi...

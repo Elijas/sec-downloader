@@ -15,4 +15,8 @@ d = { 'settings': { 'branch': 'main',
                                      'sec_downloader.core.DownloadStorage._read_files': ( 'core.html#downloadstorage._read_files',
                                                                                           'sec_downloader/core.py'),
                                      'sec_downloader.core.DownloadStorage.get_file_contents': ( 'core.html#downloadstorage.get_file_contents',
-                                                                                                'sec_downloader/core.py')}}}
+                                                                                                'sec_downloader/core.py'),
+                                     'sec_downloader.core.Downloader': ('core.html#downloader', 'sec_downloader/core.py'),
+                                     'sec_downloader.core.Downloader.__init__': ('core.html#downloader.__init__', 'sec_downloader/core.py'),
+                                     'sec_downloader.core.Downloader.get_latest_html': ( 'core.html#downloader.get_latest_html',
+                                                                                         'sec_downloader/core.py')}}}

@@ -1,4 +1,4 @@
-__version__ = "0.1.7"
-from sec_downloader.core import DownloadStorage, FileContent
+__version__ = "0.2.0"
+from sec_downloader.core import Downloader, DownloadStorage, FileContent
 
-__all__ = ["DownloadStorage", "FileContent"]
+__all__ = ["Downloader", "DownloadStorage", "FileContent"]
