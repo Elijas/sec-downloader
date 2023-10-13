@@ -34,6 +34,8 @@ html = dl.get_latest_html("10-Q", "AAPL")
 print(f"{html[:50]}...")
 ```
 
+    <?xml version="1.0" ?><!--XBRL Document Created wi...
+
 > **Note** The company name and email address are used to form a
 > user-agent string that adheres to the SEC EDGAR’s fair access policy
 > for programmatic downloading.
