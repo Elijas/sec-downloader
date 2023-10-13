@@ -23,12 +23,45 @@ pip install sec_downloader
 
 ## How to use
 
-Downloading multiple documents:
+Let’s demonstrate how to download a single file (latest 10-Q filing
+details in HTML format) to memory.
+
+``` python
+from sec_downloader import Downloader
+
+dl = Downloader("MyCompanyName", "email@example.com")
+html = dl.get_latest_html("10-Q", "AAPL")
+print(f"{html[:50]}...")
+```
+
+> **Note** The company name and email address are used to form a
+> user-agent string that adheres to the SEC EDGAR’s fair access policy
+> for programmatic downloading.
+> [Source](https://www.sec.gov/os/webmaster-faq#code-support)
+
+Which is implemented approximately as:
 
 ``` python
 from sec_edgar_downloader import Downloader as SecEdgarDownloader
 from sec_downloader import DownloadStorage
 
+ONLY_HTML = "**/*.htm*"
+
+storage = DownloadStorage(filter_pattern=ONLY_HTML)
+with storage as path:
+    dl = SecEdgarDownloader("MyCompanyName", "email@example.com", path)
+    dl.get("10-Q", "AAPL", limit=1, download_details=True)
+# all files are now deleted and only stored in memory
+
+content = storage.get_file_contents()[0].content
+print(f"{content[:50]}...")
+```
+
+    <?xml version="1.0" ?><!--XBRL Document Created wi...
+
+Downloading multiple documents:
+
+``` python
 storage = DownloadStorage()
 with storage as path:
     dl = SecEdgarDownloader("MyCompanyName", "email@example.com", path)
@@ -44,33 +77,3 @@ for path, content in storage.get_file_contents():
 
     Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt
     Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...
-
-Let’s demonstrate how to download a single file (latest 10-Q filing
-details in HTML format) to memory.
-
-``` python
-ONLY_HTML = "**/*.htm*"
-
-storage = DownloadStorage(filter_pattern=ONLY_HTML)
-with storage as path:
-    dl = SecEdgarDownloader("MyCompanyName", "email@example.com", path)
-    dl.get("10-Q", "AAPL", limit=1, download_details=True)
-# all files are now deleted and only stored in memory
-
-content = storage.get_file_contents()[0].content
-print(f"{content[:50]}...")
-```
-
-    <?xml version="1.0" ?><!--XBRL Document Created wi...
-
-Or simply:
-
-``` python
-from sec_downloader import Downloader
-
-dl = Downloader("MyCompanyName", "email@example.com")
-html = dl.get_latest_html("10-Q", "AAPL")
-print(f"{html[:50]}...")
-```
-
-    <?xml version="1.0" ?><!--XBRL Document Created wi...
