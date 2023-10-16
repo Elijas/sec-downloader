@@ -1,0 +1,29 @@
+version: '3'
+
+tasks:
+  compile:
+    desc: Export the notebooks to python modules
+    cmds:
+      - nbdev_prepare
+
+  bump:
+    desc: Bump version
+    cmds:
+      - nbdev_bump_version
+      - git add settings.ini sec_downloader/__init__.py
+      - git commit --amend --no-edit
+
+  deploy:
+    desc: Deploy the changes
+    cmds:
+      - nbdev_prepare
+      - task: ensure-clean-working-tree
+      - git pull --no-edit
+      - git push
+      - nbdev_pypi
+
+  ensure-clean-working-tree: # Ensure no changes in the working tree or index, abort if any.
+    silent: true
+    internal: true
+    cmds:
+      - if git diff --exit-code > /dev/null 2>&1 && git diff --cached --exit-code > /dev/null 2>&1; then :; else echo "Changes detected in the working tree or index. Please commit or stash them before proceeding."; exit 1; fi
