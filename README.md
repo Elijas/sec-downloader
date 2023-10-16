@@ -7,7 +7,8 @@
 <a href="https://badge.fury.io/py/sec-downloader"><img src="https://badge.fury.io/py/sec-downloader.svg" alt="PyPI version" /></a>
 <a href="LICENSE"><img src="https://img.shields.io/github/license/elijas/sec-downloader.svg" alt="Licence"></a>
 
-Useful extensions for sec-edgar-downloader.
+Useful extensions for sec-edgar-downloader. Built with
+[nbdev](https://nbdev.fast.ai/).
 
 ## Install
 
