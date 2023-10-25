@@ -66,5 +66,5 @@ class Downloader:
         storage = DownloadStorage(filter_pattern=ONLY_HTML)
         with storage as path:
             dl = SecEdgarDownloader(self.company_name, self.email_address, path)
-            dl.get("10-Q", "AAPL", limit=1, download_details=True)
+            dl.get(doc_type, ticker, limit=1, download_details=True)
         return storage.get_file_contents()[0].content
