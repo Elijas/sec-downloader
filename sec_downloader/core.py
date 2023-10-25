@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['FileContent', 'DEFAULT_FILTER_PATTERN', 'ONLY_HTML', 'DownloadStorage', 'Downloader']
 
-# %% ../nbs/00_core.ipynb 3
+# %% ../nbs/00_core.ipynb 4
 import tempfile
 import shutil
 from pathlib import Path
@@ -12,7 +12,7 @@ from typing import Optional
 from collections import namedtuple
 from sec_edgar_downloader import Downloader as SecEdgarDownloader
 
-# %% ../nbs/00_core.ipynb 4
+# %% ../nbs/00_core.ipynb 5
 FileContent = namedtuple("FileContent", ["path", "content"])
 DEFAULT_FILTER_PATTERN = "**/*.*"
 
@@ -49,7 +49,7 @@ class DownloadStorage:
             )
         return self.file_contents
 
-# %% ../nbs/00_core.ipynb 5
+# %% ../nbs/00_core.ipynb 6
 ONLY_HTML = "**/*.htm*"
 
 
