@@ -80,3 +80,15 @@ for path, content in storage.get_file_contents():
 
     Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt
     Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...
+
+## Contributing
+
+Follow these steps to install the project locally for development:
+
+1. Install the project with the command `pip install -e .[dev]`.
+
+> **Note**
+We highly recommend using virtual environments for Python development. If you're using virtual environments, follow these steps instead:
+> - Install the project with `pipenv install -e .[dev]`. 
+> - If `pipenv` is not installed, you can install it using `pipx install pipenv`. 
+> - If `pipx` is not installed, you can install it using `python3 -m pip install --user pipx`.
