@@ -88,7 +88,7 @@ Follow these steps to install the project locally for development:
 1. Install the project with the command `pip install -e ".[dev]"`.
 
 > **Note**
-We highly recommend using virtual environments for Python development. If you're using virtual environments, follow these steps instead:
+We highly recommend using virtual environments for Python development. If you'd like to use virtual environments, follow these steps instead:
 > - Create a virtual environment `python3 -m venv .venv`
 > - Activate the virtual environment `source .venv/bin/activate`
 > - Install the project with the command `pip install -e ".[dev]"`
