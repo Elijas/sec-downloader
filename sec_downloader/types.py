@@ -18,10 +18,3 @@ class FilingMetadata:
     report_date: str
     company_name: str
     tickers: list[Ticker]
-
-
-@dataclass
-class Filing:
-    metadata: FilingMetadata
-    primary_document: bytes
-    primary_document: bytes

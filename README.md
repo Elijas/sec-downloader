@@ -38,7 +38,7 @@ html = dl.get_latest_html("10-Q", "AAPL")
 print(f"{html[:50]}...")
 ```
 
-    <?xml version="1.0" ?><!--XBRL Document Created wi...
+    ImportError: cannot import name 'Filing' from 'sec_downloader.types' (/Users/user/Development/alphanome-ai/sec-downloader/sec_downloader/types.py)
 
 > **Note** The company name and email address are used to form a
 > user-agent string that adheres to the SEC EDGAR’s fair access policy
@@ -154,8 +154,8 @@ r
 You can download the HTML for any of the filings:
 
 ``` python
-for filing in dl.download_filings(metadatas):
-    html = filing.primary_document.decode()
+for metadata in metadatas:
+    html = dl.download_filing(url=metadata.primary_doc_url).decode()
     print(html[:50])
     break  # same for all filings, let's just print the first one
 ```

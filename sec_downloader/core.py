@@ -12,7 +12,6 @@ from sec_downloader.sec_edgar_downloader_fork import (
     get_filing_metadata,
     get_latest_filings_metadata,
 )
-from sec_downloader.types import Filing
 from sec_edgar_downloader import Downloader as SecEdgarDownloader
 from sec_edgar_downloader._orchestrator import get_ticker_to_cik_mapping
 from sec_edgar_downloader._sec_gateway import download_filing
@@ -132,15 +131,7 @@ class Downloader:
 
         return metadatas
 
-    def download_filings(self, metadatas: list[FilingMetadata]) -> list[Filing]:
-        filings: list[Filing] = []
-        for metadata in metadatas:
-            primary_doc = self.download_filing_from_sec_edgar_url(
-                metadata.primary_doc_url
-            )
-            filings.append(Filing(metadata=metadata, primary_document=primary_doc))
-        return filings
-
-    def download_filing_from_sec_edgar_url(self, url: str) -> bytes:
+    def download_filing(self, *, url: str) -> bytes:
+        assert url.startswith("https://www.sec.gov/")
         return download_filing(url, self.user_agent)
         return download_filing(url, self.user_agent)
