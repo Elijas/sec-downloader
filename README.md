@@ -24,7 +24,7 @@ pip install sec_downloader
 
 ## How to use
 
-### Download from ticker
+### Option 1: Wrapper of `sec-edgar-downloader`
 
 Let’s demonstrate how to download a single file (latest 10-Q filing
 details in HTML format) to memory.
@@ -84,15 +84,83 @@ for path, content in storage.get_file_contents():
     Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt
     Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...
 
-### Download from Accession Number
+### Option 2: Fork implementation of `sec-edgar-downloader`
+
+#### Download the metadata
 
 ``` python
 dl = Downloader("MyCompanyName", "email@example.com")
-html = dl.get_primary_doc_html(accession_number="0000320193-23-000077")
-print(f"{html[:50]}...")
+dl.get_filing_metadata(accession_number="0000320193-23-000077")
 ```
 
-    <?xml version="1.0" ?><!--XBRL Document Created wi...
+    FilingMetadata(accession_number='0000320193-23-000077', form_type='10-Q', primary_doc_url='https://www.sec.gov/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm', items='', primary_doc_description='10-Q', filing_date='2023-08-04', report_date='2023-07-01', company_name='Apple Inc.', tickers=[Ticker(symbol='AAPL', exchange='Nasdaq')])
+
+``` python
+dl = Downloader("MyCompanyName", "email@example.com")
+metadatas = dl.get_filing_metadatas(
+    [
+        # Here you can provide any number of these:
+        # -----------------------------------------
+        # EXAMPLE 1: Accession Number
+        "0000320193-23-000077",
+        # -----------------------------------------
+        # EXAMPLE 2: SEC EDGAR Filing URL
+        "https://www.sec.gov/ix?doc=/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm",
+        # -----------------------------------------
+        # EXAMPLE 3: Latest 10-Q filing from Netflix
+        # Note: Use a Ticker or CIK. Format: [amount=1]/ticker_or_cik/[form_type=10-Q]
+        "NFLX",
+        # -----------------------------------------
+        # Example 4: Two latest 10-K filings from Microsoft
+        # Note: Equivalent to RequestedFilings(limit=2, ticker_or_cik="MSFT", form_type="10-K")
+        "2/MSFT/10-K",
+    ]
+)
+
+# Below is just for demo purposes to view the values in the result
+import pandas as pd
+from dataclasses import asdict
+
+r = pd.DataFrame([asdict(metadata) for metadata in metadatas])
+r = r[["company_name"] + [col for col in r.columns if col != "company_name"]]
+r
+```
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&#10;    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+&#10;    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+
+|     | company_name   | accession_number     | form_type | primary_doc_url                                   | items | primary_doc_description | filing_date | report_date | tickers                                      |
+|-----|----------------|----------------------|-----------|---------------------------------------------------|-------|-------------------------|-------------|-------------|----------------------------------------------|
+| 0   | Apple Inc.     | 0000320193-23-000077 | 10-Q      | https://www.sec.gov/Archives/edgar/data/320193... |       | 10-Q                    | 2023-08-04  | 2023-07-01  | \[{'symbol': 'AAPL', 'exchange': 'Nasdaq'}\] |
+| 1   | Apple Inc.     | 0000320193-23-000077 | 10-Q      | https://www.sec.gov/Archives/edgar/data/320193... |       | 10-Q                    | 2023-08-04  | 2023-07-01  | \[{'symbol': 'AAPL', 'exchange': 'Nasdaq'}\] |
+| 2   | NETFLIX INC    | 0001065280-23-000273 | 10-Q      | https://www.sec.gov/Archives/edgar/data/106528... |       | 10-Q                    | 2023-10-20  | 2023-09-30  | \[{'symbol': 'NFLX', 'exchange': 'Nasdaq'}\] |
+| 3   | MICROSOFT CORP | 0000950170-23-035122 | 10-K      | https://www.sec.gov/Archives/edgar/data/789019... |       | 10-K                    | 2023-07-27  | 2023-06-30  | \[{'symbol': 'MSFT', 'exchange': 'Nasdaq'}\] |
+| 4   | MICROSOFT CORP | 0001564590-22-026876 | 10-K      | https://www.sec.gov/Archives/edgar/data/789019... |       | 10-K                    | 2022-07-28  | 2022-06-30  | \[{'symbol': 'MSFT', 'exchange': 'Nasdaq'}\] |
+
+</div>
+
+#### Download the HTML files
+
+You can download the HTML for any of the filings:
+
+``` python
+for filing in dl.download_filings(metadatas):
+    html = filing.primary_document.decode()
+    print(html[:50])
+    break  # same for all filings, let's just print the first one
+```
+
+    <?xml version="1.0" ?><!--XBRL Document Created wi
 
 ## Contributing
 
