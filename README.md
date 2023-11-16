@@ -24,6 +24,8 @@ pip install sec_downloader
 
 ## How to use
 
+### Download from ticker
+
 Let’s demonstrate how to download a single file (latest 10-Q filing
 details in HTML format) to memory.
 
@@ -32,6 +34,7 @@ from sec_downloader import Downloader
 
 dl = Downloader("MyCompanyName", "email@example.com")
 html = dl.get_latest_html("10-Q", "AAPL")
+# Use dl.get_latest_n_html("10-Q", "AAPL", n=5) to get the latest 5 10-Qs
 print(f"{html[:50]}...")
 ```
 
@@ -80,3 +83,13 @@ for path, content in storage.get_file_contents():
 
     Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt
     Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...
+
+### Download from Accession Number
+
+``` python
+dl = Downloader("MyCompanyName", "email@example.com")
+html = dl.get_primary_doc_html(accession_number="0000320193-23-000077")
+print(f"{html[:50]}...")
+```
+
+    <?xml version="1.0" ?><!--XBRL Document Created wi...
