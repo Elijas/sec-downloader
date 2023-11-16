@@ -4,7 +4,7 @@ import tempfile
 from collections import namedtuple
 from glob import glob
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from sec_downloader.requested_filings import RequestedFilings
 from sec_downloader.types import Filing
@@ -106,7 +106,7 @@ class Downloader:
 
     def get_filing_metadatas(
         self,
-        requested_filings: list[str | RequestedFilings],
+        requested_filings: list[Union[str, RequestedFilings]],
     ) -> list[FilingMetadata]:
         metadatas: list[FilingMetadata] = []
         for requested in requested_filings:
@@ -143,4 +143,5 @@ class Downloader:
         return filings
 
     def download_filing_from_sec_edgar_url(self, url: str) -> bytes:
+        return download_filing(url, self.user_agent)
         return download_filing(url, self.user_agent)
