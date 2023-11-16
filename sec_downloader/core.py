@@ -90,7 +90,7 @@ class Downloader:
         )
 
     def get_primary_doc_html(
-        self, *, accession_number: str, encoding: str | None = DEFAULT_ENCODING
+        self, *, accession_number: str, encoding: Optional[str] = DEFAULT_ENCODING
     ):
         primary_doc_url = self.get_primary_doc_url(accession_number=accession_number)
         html = download_filing(primary_doc_url, self.user_agent)
