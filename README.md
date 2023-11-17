@@ -85,37 +85,31 @@ answer:
 Find latest filings by company ticker or CIK:
 
 ``` python
-metadatas = dl.get_filing_metadatas("2/MSFT/10-K")
+from sec_downloader.types import RequestedFilings
+
+metadata = dl.get_filing_metadatas(
+    RequestedFilings(ticker_or_cik="MSFT", form_type="10-K", limit=2)
+)
 print(metadatas)
 ```
 
-    [FilingMetadata(accession_number='0000950170-23-035122',
-                    form_type='10-K',
-                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm',
-                    items='',
-                    primary_doc_description='10-K',
-                    filing_date='2023-07-27',
-                    report_date='2023-06-30',
-                    cik='0000789019',
-                    company_name='MICROSOFT CORP',
-                    tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')]),
-     FilingMetadata(accession_number='0001564590-22-026876',
-                    form_type='10-K',
-                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000156459022026876/msft-10k_20220630.htm',
-                    items='',
-                    primary_doc_description='10-K',
-                    filing_date='2022-07-28',
-                    report_date='2022-06-30',
-                    cik='0000789019',
-                    company_name='MICROSOFT CORP',
-                    tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')])]
+    [FilingMetadata(accession_number='0001193125-23-272204',
+                    form_type='8-K',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/1067983/000119312523272204/d564412d8k.htm',
+                    items='2.02,9.01',
+                    primary_doc_description='8-K',
+                    filing_date='2023-11-07',
+                    report_date='2023-11-04',
+                    cik='0001067983',
+                    company_name='BERKSHIRE HATHAWAY INC',
+                    tickers=[Ticker(symbol='BRK-B', exchange='NYSE'),
+                             Ticker(symbol='BRK-A', exchange='NYSE')])]
 
 Alternatively, you can also use any of these to get the same answer:
 
     metadata = dl.get_filing_metadatas("2/msft/10-K")
     metadata = dl.get_filing_metadatas("2/789019/10-K")
     metadata = dl.get_filing_metadatas("2/0000789019/10-K")
-    metadata = dl.get_filing_metadatas(RequestedFilings(limit=2, ticker_or_cik="MSFT", form_type="10-K"))
 
 The parameters `limit` and `form_type` are optional. If omitted, `limit`
 defaults to 1, and `form_type` defaults to ‘10-Q’.
