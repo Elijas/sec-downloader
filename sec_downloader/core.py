@@ -6,19 +6,18 @@ from glob import glob
 from pathlib import Path
 from typing import Optional, Union
 
-from sec_downloader.requested_filings import RequestedFilings
 from sec_downloader.sec_edgar_downloader_fork import (
     FilingMetadata,
     get_filing_metadata,
     get_latest_filings_metadata,
 )
+from sec_downloader.types import CompanyAndAccessionNumber, RequestedFilings
 from sec_edgar_downloader import Downloader as SecEdgarDownloader
 from sec_edgar_downloader._orchestrator import get_ticker_to_cik_mapping
 from sec_edgar_downloader._sec_gateway import download_filing
 
 FileContent = namedtuple("FileContent", ["path", "content"])
 DEFAULT_FILTER_PATTERN = "**/*.*"
-ACCESSION_NUMBER_PATTERN = re.compile(r"\b(\d{10}-?\d{2}-?\d{6})\b")
 
 
 class DownloadStorage:
@@ -88,50 +87,40 @@ class Downloader:
             dl.get(doc_type, ticker, limit=n, download_details=True)
         return [k.content for k in storage.get_file_contents()]
 
-    def get_filing_metadata(self, *, accession_number: str) -> FilingMetadata:
-        return get_filing_metadata(
-            accession_number=accession_number, user_agent=self.user_agent
-        )
-
-    def get_latest_filings_metadata(
-        self, *, requested: RequestedFilings
-    ) -> list[FilingMetadata]:
-        return get_latest_filings_metadata(
-            requested=requested,
-            user_agent=self.user_agent,
-            ticker_to_cik_mapping=self._ticker_to_cik_mapping,
-        )
-
     def get_filing_metadatas(
         self,
-        requested_filings: list[Union[str, RequestedFilings]],
+        query: Union[str, RequestedFilings, CompanyAndAccessionNumber],
     ) -> list[FilingMetadata]:
-        metadatas: list[FilingMetadata] = []
-        for requested in requested_filings:
-            if isinstance(requested, str) and (
-                match := ACCESSION_NUMBER_PATTERN.search(requested)
-            ):
-                accession_number = match.group(1)
-                metadata = self.get_filing_metadata(accession_number=accession_number)
-                metadatas.append(metadata)
-                continue
+        if isinstance(query, (CompanyAndAccessionNumber, str)):
+            if isinstance(query, str):
+                new_query = CompanyAndAccessionNumber.from_string(
+                    query, must_match=False
+                )
+                if new_query is not None:
+                    query = new_query
+            if isinstance(query, CompanyAndAccessionNumber):
+                return [
+                    get_filing_metadata(
+                        ticker_or_cik=query.ticker_or_cik,
+                        accession_number=query.accession_number,
+                        user_agent=self.user_agent,
+                        ticker_to_cik_mapping=self._ticker_to_cik_mapping,
+                    )
+                ]
 
-            if isinstance(requested, RequestedFilings):
-                new_metadatas = self.get_latest_filings_metadata(requested=requested)
-                metadatas.extend(new_metadatas)
-                continue
+        if isinstance(query, (RequestedFilings, str)):
+            if isinstance(query, str):
+                query = RequestedFilings.from_string(query)
 
-            if isinstance(requested, str):
-                requested = RequestedFilings.from_string(requested)
-                new_metadatas = self.get_latest_filings_metadata(requested=requested)
-                metadatas.extend(new_metadatas)
-                continue
+            new_metadatas = get_latest_filings_metadata(
+                requested=query,
+                user_agent=self.user_agent,
+                ticker_to_cik_mapping=self._ticker_to_cik_mapping,
+            )
+            return new_metadatas
 
-            raise ValueError(f"Invalid input: {requested}")
-
-        return metadatas
+        raise ValueError(f"Invalid input: {query}")
 
     def download_filing(self, *, url: str) -> bytes:
         assert url.startswith("https://www.sec.gov/")
-        return download_filing(url, self.user_agent)
         return download_filing(url, self.user_agent)

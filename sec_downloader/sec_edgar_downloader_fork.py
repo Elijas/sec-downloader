@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 import sys
 from collections import deque
-from typing import Optional
+from typing import Optional, Union
 
-from sec_downloader.core import RequestedFilings
-from sec_downloader.types import FilingMetadata, Ticker
+from sec_downloader.types import FilingMetadata, RequestedFilings, Ticker
 from sec_edgar_downloader import Downloader
 from sec_edgar_downloader._constants import (
     AMENDS_SUFFIX,
+    CIK_LENGTH,
     SUBMISSION_FILE_FORMAT,
     SUPPORTED_FORMS,
     URL_SUBMISSIONS,
@@ -21,14 +21,20 @@ from sec_edgar_downloader._utils import validate_and_convert_ticker_or_cik
 accession_number_re = re.compile(r"^\d{10}-\d{2}-\d{6}$")
 
 
-def get_filing_metadata(*, accession_number: str, user_agent: str) -> FilingMetadata:
+def get_filing_metadata(
+    *,
+    ticker_or_cik: str,
+    accession_number: str,
+    user_agent: str,
+    ticker_to_cik_mapping: dict[str, str],
+) -> FilingMetadata:
     if len(accession_number) == 18:
         accession_number = (
             f"{accession_number[:10]}-{accession_number[10:12]}-{accession_number[12:]}"
         )
     if not accession_number_re.match(accession_number):
         raise ValueError(f"Invalid Accession Number: {accession_number}")
-    cik = accession_number[:10]
+    cik = validate_and_convert_ticker_or_cik(ticker_or_cik, ticker_to_cik_mapping)
     result = _get_metadatas(
         cik=cik,
         user_agent=user_agent,
@@ -99,7 +105,8 @@ def _get_metadatas(
     additional_submissions = None
     found_metadatas: list[FilingMetadata] = []
     fetched_count = 0
-    tickers = None
+    company_tickers = None
+    company_cik = None
     company_name = None
     while fetched_count < limit:
         resp_json = get_list_of_available_filings(submissions_uri, user_agent)
@@ -107,18 +114,20 @@ def _get_metadatas(
         if additional_submissions is None:
             filings_json = resp_json["filings"]["recent"]
             additional_submissions = deque(resp_json["filings"]["files"])
-            tickers = [
+            company_tickers = [
                 Ticker(symbol=ticker, exchange=exchange)
                 for ticker, exchange in zip(
                     resp_json["tickers"], resp_json["exchanges"]
                 )
             ]
             company_name = resp_json["name"]
+            company_cik = str(resp_json["cik"]).zfill(CIK_LENGTH)
         # On second page or more of API response (for companies with >1000 filings)
         else:
             filings_json = resp_json
-        assert tickers is not None
+        assert company_tickers is not None
         assert company_name is not None
+        assert company_cik is not None
 
         accession_numbers = filings_json["accessionNumber"]
         primary_document_urls = filings_json["primaryDocument"]
@@ -158,13 +167,14 @@ def _get_metadatas(
             found_metadata = FilingMetadata(
                 primary_doc_url=td.primary_doc_uri,
                 accession_number=this_accession_number,
-                tickers=tickers,
+                tickers=company_tickers,
                 company_name=company_name,
                 filing_date=filing_date,
                 report_date=report_date,
                 primary_doc_description=primary_doc_description,
                 items=items,
                 form_type=this_form_type,
+                cik=company_cik,
             )
             found_metadatas.append(found_metadata)
             fetched_count += 1
@@ -187,5 +197,7 @@ def _get_metadatas(
     if len(found_metadatas) > limit:
         msg = f"Found more than {limit} filings, actual count is {len(found_metadatas)}: {error_context}"
         raise OverflowError(msg)
+
+    return found_metadatas
 
     return found_metadatas

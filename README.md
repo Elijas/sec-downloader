@@ -10,35 +10,171 @@
 Useful extensions for sec-edgar-downloader. Built with
 [nbdev](https://nbdev.fast.ai/).
 
-## Install
+# Install
 
 ``` sh
 pip install sec_downloader
 ```
 
-## Features
+# Features
 
 - Files are downloaded to a temporary folder, immediately read into
   memory, and then deleted.
 - Use “glob” pattern to select which files are read to memory.
 
-## How to use
+# How to use
 
-### Option 1: Wrapper of `sec-edgar-downloader`
+## Download the metadata
+
+Find a filing with an Accession Number
+
+``` python
+from sec_downloader import Downloader
+
+dl = Downloader("MyCompanyName", "email@example.com")
+metadata = dl.get_filing_metadatas("AAPL/0000320193-23-000077")
+print(metadata[0])
+```
+
+    FilingMetadata(accession_number='0000320193-23-000077',
+                   form_type='10-Q',
+                   primary_doc_url='https://www.sec.gov/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm',
+                   items='',
+                   primary_doc_description='10-Q',
+                   filing_date='2023-08-04',
+                   report_date='2023-07-01',
+                   cik='0000320193',
+                   company_name='Apple Inc.',
+                   tickers=[Ticker(symbol='AAPL', exchange='Nasdaq')])
+
+Alternatively, you can also use any of these to get the same answer:
+
+    metadata = dl.get_filing_metadatas("aapl/000032019323000077")
+    metadata = dl.get_filing_metadatas("320193/000032019323000077")
+    metadata = dl.get_filing_metadatas("320193/0000320193-23-000077")
+    metadata = dl.get_filing_metadatas("0000320193/0000320193-23-000077")
+    metadata = dl.get_filing_metadatas(CompanyAndAccessionNumber(ticker_or_cik="320193", accession_number="0000320193-23-000077"))
+
+Find the filing matching a SEC EDGAR Filing URL. Only CIK and Accession
+Number are used from the URL:
+
+``` python
+metadatas = dl.get_filing_metadatas(
+    "https://www.sec.gov/ix?doc=/Archives/edgar/data/0001067983/000119312523272204/d564412d8k.htm"
+)
+print(metadatas[0])
+```
+
+    FilingMetadata(accession_number='0001193125-23-272204',
+                   form_type='8-K',
+                   primary_doc_url='https://www.sec.gov/Archives/edgar/data/1067983/000119312523272204/d564412d8k.htm',
+                   items='2.02,9.01',
+                   primary_doc_description='8-K',
+                   filing_date='2023-11-07',
+                   report_date='2023-11-04',
+                   cik='0001067983',
+                   company_name='BERKSHIRE HATHAWAY INC',
+                   tickers=[Ticker(symbol='BRK-B', exchange='NYSE'),
+                            Ticker(symbol='BRK-A', exchange='NYSE')])
+
+Alternatively, you can also URLs in other formats and get the same
+answer:
+
+    metadata = dl.get_filing_metadatas("https://www.sec.gov/Archives/edgar/data/1067983/000119312523272204/d564412d8k.htm")
+
+Find latest filings by company ticker or CIK:
+
+``` python
+metadatas = dl.get_filing_metadatas("2/MSFT/10-K")
+print(metadatas)
+```
+
+    [FilingMetadata(accession_number='0000950170-23-035122',
+                    form_type='10-K',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm',
+                    items='',
+                    primary_doc_description='10-K',
+                    filing_date='2023-07-27',
+                    report_date='2023-06-30',
+                    cik='0000789019',
+                    company_name='MICROSOFT CORP',
+                    tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')]),
+     FilingMetadata(accession_number='0001564590-22-026876',
+                    form_type='10-K',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000156459022026876/msft-10k_20220630.htm',
+                    items='',
+                    primary_doc_description='10-K',
+                    filing_date='2022-07-28',
+                    report_date='2022-06-30',
+                    cik='0000789019',
+                    company_name='MICROSOFT CORP',
+                    tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')])]
+
+Alternatively, you can also use any of these to get the same answer:
+
+    metadata = dl.get_filing_metadatas("2/msft/10-K")
+    metadata = dl.get_filing_metadatas("2/789019/10-K")
+    metadata = dl.get_filing_metadatas("2/0000789019/10-K")
+    metadata = dl.get_filing_metadatas(RequestedFilings(limit=2, ticker_or_cik="MSFT", form_type="10-K"))
+
+The parameters `limit` and `form_type` are optional. If omitted, `limit`
+defaults to 1, and `form_type` defaults to ‘10-Q’.
+
+``` python
+metadatas = dl.get_filing_metadatas("NFLX")
+print(metadatas)
+```
+
+    [FilingMetadata(accession_number='0001065280-23-000273',
+                    form_type='10-Q',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/1065280/000106528023000273/nflx-20230930.htm',
+                    items='',
+                    primary_doc_description='10-Q',
+                    filing_date='2023-10-20',
+                    report_date='2023-09-30',
+                    cik='0001065280',
+                    company_name='NETFLIX INC',
+                    tickers=[Ticker(symbol='NFLX', exchange='Nasdaq')])]
+
+Alternatively, you can also use any of these to get the same answer:
+
+    metadata = dl.get_filing_metadatas("nflx")
+    metadata = dl.get_filing_metadatas("1/NFLX")
+    metadata = dl.get_filing_metadatas("NFLX/10-Q")
+    metadata = dl.get_filing_metadatas("1/NFLX/10-Q")
+    metadata = dl.get_filing_metadatas(RequestedFilings(ticker_or_cik="NFLX"))
+
+## Download the HTML files
+
+After obtaining the Primary Document URL, for example from the metadata,
+you can proceed to download the HTML using this URL.
+
+``` python
+for metadata in metadatas:
+    html = dl.download_filing(url=metadata.primary_doc_url).decode()
+    print(html[:50])
+    break  # same for all filings, let's just print the first one
+```
+
+    '<?xml version="1.0" ?><!--XBRL Document Created wi'
+
+# Advanced usage: Wrapper
+
+If insteand of using the forked/modified `sec-edgar-downloader`, you
+want to wrap its output instead, you can use the wrapper class
+`SecDownloaderWrapper`.
 
 Let’s demonstrate how to download a single file (latest 10-Q filing
 details in HTML format) to memory.
 
 ``` python
-from sec_downloader import Downloader
-
 dl = Downloader("MyCompanyName", "email@example.com")
 html = dl.get_latest_html("10-Q", "AAPL")
 # Use dl.get_latest_n_html("10-Q", "AAPL", n=5) to get the latest 5 10-Qs
 print(f"{html[:50]}...")
 ```
 
-    ImportError: cannot import name 'Filing' from 'sec_downloader.types' (/Users/user/Development/alphanome-ai/sec-downloader/sec_downloader/types.py)
+    '<?xml version="1.0" ?><!--XBRL Document Created wi...'
 
 > **Note** The company name and email address are used to form a
 > user-agent string that adheres to the SEC EDGAR’s fair access policy
@@ -63,7 +199,7 @@ content = storage.get_file_contents()[0].content
 print(f"{content[:50]}...")
 ```
 
-    <?xml version="1.0" ?><!--XBRL Document Created wi...
+    '<?xml version="1.0" ?><!--XBRL Document Created wi...'
 
 Downloading multiple documents:
 
@@ -78,91 +214,12 @@ for path, content in storage.get_file_contents():
     print(f"Path: {path}\nContent [len={len(content)}]: {content[:30]}...\n")
 ```
 
-    Path: sec-edgar-filings/GOOG/10-K/0001652044-22-000019/full-submission.txt
-    Content [len=15044932]: <SEC-DOCUMENT>0001652044-22-00...
+    ('Path: sec-edgar-filings/GOOG/10-K/0001652044-22-000019/full-submission.txt\n'
+     'Content [len=15044932]: <SEC-DOCUMENT>0001652044-22-00...\n')
+    ('Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt\n'
+     'Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...\n')
 
-    Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt
-    Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...
-
-### Option 2: Fork implementation of `sec-edgar-downloader`
-
-#### Download the metadata
-
-``` python
-dl = Downloader("MyCompanyName", "email@example.com")
-dl.get_filing_metadata(accession_number="0000320193-23-000077")
-```
-
-    FilingMetadata(accession_number='0000320193-23-000077', form_type='10-Q', primary_doc_url='https://www.sec.gov/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm', items='', primary_doc_description='10-Q', filing_date='2023-08-04', report_date='2023-07-01', company_name='Apple Inc.', tickers=[Ticker(symbol='AAPL', exchange='Nasdaq')])
-
-``` python
-dl = Downloader("MyCompanyName", "email@example.com")
-metadatas = dl.get_filing_metadatas(
-    [
-        # Here you can provide any number of these:
-        # -----------------------------------------
-        # EXAMPLE 1: Accession Number
-        "0000320193-23-000077",
-        # -----------------------------------------
-        # EXAMPLE 2: SEC EDGAR Filing URL
-        "https://www.sec.gov/ix?doc=/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm",
-        # -----------------------------------------
-        # EXAMPLE 3: Latest 10-Q filing from Netflix
-        # Note: Use a Ticker or CIK. Format: [amount=1]/ticker_or_cik/[form_type=10-Q]
-        "NFLX",
-        # -----------------------------------------
-        # Example 4: Two latest 10-K filings from Microsoft
-        # Note: Equivalent to RequestedFilings(limit=2, ticker_or_cik="MSFT", form_type="10-K")
-        "2/MSFT/10-K",
-    ]
-)
-
-# Below is just for demo purposes to view the values in the result
-import pandas as pd
-from dataclasses import asdict
-
-r = pd.DataFrame([asdict(metadata) for metadata in metadatas])
-r = r[["company_name"] + [col for col in r.columns if col != "company_name"]]
-r
-```
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&#10;    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-&#10;    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-
-|     | company_name   | accession_number     | form_type | primary_doc_url                                   | items | primary_doc_description | filing_date | report_date | tickers                                      |
-|-----|----------------|----------------------|-----------|---------------------------------------------------|-------|-------------------------|-------------|-------------|----------------------------------------------|
-| 0   | Apple Inc.     | 0000320193-23-000077 | 10-Q      | https://www.sec.gov/Archives/edgar/data/320193... |       | 10-Q                    | 2023-08-04  | 2023-07-01  | \[{'symbol': 'AAPL', 'exchange': 'Nasdaq'}\] |
-| 1   | Apple Inc.     | 0000320193-23-000077 | 10-Q      | https://www.sec.gov/Archives/edgar/data/320193... |       | 10-Q                    | 2023-08-04  | 2023-07-01  | \[{'symbol': 'AAPL', 'exchange': 'Nasdaq'}\] |
-| 2   | NETFLIX INC    | 0001065280-23-000273 | 10-Q      | https://www.sec.gov/Archives/edgar/data/106528... |       | 10-Q                    | 2023-10-20  | 2023-09-30  | \[{'symbol': 'NFLX', 'exchange': 'Nasdaq'}\] |
-| 3   | MICROSOFT CORP | 0000950170-23-035122 | 10-K      | https://www.sec.gov/Archives/edgar/data/789019... |       | 10-K                    | 2023-07-27  | 2023-06-30  | \[{'symbol': 'MSFT', 'exchange': 'Nasdaq'}\] |
-| 4   | MICROSOFT CORP | 0001564590-22-026876 | 10-K      | https://www.sec.gov/Archives/edgar/data/789019... |       | 10-K                    | 2022-07-28  | 2022-06-30  | \[{'symbol': 'MSFT', 'exchange': 'Nasdaq'}\] |
-
-</div>
-
-#### Download the HTML files
-
-You can download the HTML for any of the filings:
-
-``` python
-for metadata in metadatas:
-    html = dl.download_filing(url=metadata.primary_doc_url).decode()
-    print(html[:50])
-    break  # same for all filings, let's just print the first one
-```
-
-    <?xml version="1.0" ?><!--XBRL Document Created wi
-
-## Contributing
+# Contributing
 
 Follow these steps to install the project locally for development:
 
@@ -170,7 +227,8 @@ Follow these steps to install the project locally for development:
 
 > **Note** We highly recommend using virtual environments for Python
 > development. If you’d like to use virtual environments, follow these
-> steps instead: - Create a virtual environment
-> `python3 -m venv .venv` - Activate the virtual environment
-> `source .venv/bin/activate` - Install the project with the command
-> `pip install -e ".[dev]"`
+> steps instead:
+>
+> - Create a virtual environment `python3 -m venv .venv`
+> - Activate the virtual environment `source .venv/bin/activate`
+> - Install the project with the command `pip install -e ".[dev]"`
