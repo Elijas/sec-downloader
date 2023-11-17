@@ -67,7 +67,7 @@ class Downloader:
         assert url.startswith("https://www.sec.gov/")
         return download_filing(url, self.user_agent)
 
-    def download_primary_docs(
+    def get_filing_html(
         self,
         *,
         query: Optional[Union[str, RequestedFilings, CompanyAndAccessionNumber]] = None,
