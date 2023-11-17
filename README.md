@@ -7,7 +7,9 @@
 <a href="https://badge.fury.io/py/sec-downloader"><img src="https://badge.fury.io/py/sec-downloader.svg" alt="PyPI version" /></a>
 <a href="LICENSE"><img src="https://img.shields.io/github/license/elijas/sec-downloader.svg" alt="Licence"></a>
 
-Useful extensions for sec-edgar-downloader. Built with
+A better version of `sec-edgar-downloader`. Includes an alternative
+implementation (a wrapper instead of a fork), to keep compatibility with
+new `sec-edgar-downloader` releases. This library partially uses
 [nbdev](https://nbdev.fast.ai/).
 
 # Install
@@ -16,22 +18,24 @@ Useful extensions for sec-edgar-downloader. Built with
 pip install sec_downloader
 ```
 
-# Features
-
-- Files are downloaded to a temporary folder, immediately read into
-  memory, and then deleted.
-- Use “glob” pattern to select which files are read to memory.
-
 # How to use
 
 ## Download the metadata
 
-Find a filing with an Accession Number
+> **Note** The company name and email address are used to form a
+> user-agent string that adheres to the SEC EDGAR’s fair access policy
+> for programmatic downloading.
+> [Source](https://www.sec.gov/os/webmaster-faq#code-support)
 
 ``` python
 from sec_downloader import Downloader
 
 dl = Downloader("MyCompanyName", "email@example.com")
+```
+
+Find a filing with an Accession Number
+
+``` python
 metadata = dl.get_filing_metadatas("AAPL/0000320193-23-000077")
 print(metadata[0])
 ```
@@ -153,34 +157,16 @@ for metadata in metadatas:
 
     '<?xml version="1.0" ?><!--XBRL Document Created wi'
 
-# Advanced usage: Wrapper
+# Alternative implementation: Wrapper
 
-If insteand of using the forked/modified `sec-edgar-downloader`, you
-want to wrap its output instead, you can use the wrapper class
-`SecDownloaderWrapper`.
-
-Let’s demonstrate how to download a single file (latest 10-Q filing
-details in HTML format) to memory.
-
-``` python
-dl = Downloader("MyCompanyName", "email@example.com")
-html = dl.get_latest_html("10-Q", "AAPL")
-# Use dl.get_latest_n_html("10-Q", "AAPL", n=5) to get the latest 5 10-Qs
-print(f"{html[:50]}...")
-```
-
-    '<?xml version="1.0" ?><!--XBRL Document Created wi...'
-
-> **Note** The company name and email address are used to form a
-> user-agent string that adheres to the SEC EDGAR’s fair access policy
-> for programmatic downloading.
-> [Source](https://www.sec.gov/os/webmaster-faq#code-support)
-
-Which is implemented approximately as:
+Files are downloaded to a temporary folder, immediately read into
+memory, and then deleted. Let’s demonstrate how to download a single
+file (latest 10-Q filing details in HTML format) to memory. The “glob”
+pattern is used to select which files are read to memory.
 
 ``` python
 from sec_edgar_downloader import Downloader as SecEdgarDownloader
-from sec_downloader import DownloadStorage
+from sec_downloader.download_storage import DownloadStorage
 
 ONLY_HTML = "**/*.htm*"
 
