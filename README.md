@@ -61,8 +61,8 @@ dl = Downloader("MyCompanyName", "email@example.com")
 Find a filing with an Accession Number
 
 ``` python
-metadata = dl.get_filing_metadatas("AAPL/0000320193-23-000077")
-print(metadata[0])
+metadatas = dl.get_filing_metadatas("AAPL/0000320193-23-000077")
+print(metadatas)
 ```
 
     FilingMetadata(accession_number='0000320193-23-000077',
@@ -78,11 +78,11 @@ print(metadata[0])
 
 Alternatively, you can also use any of these to get the same answer:
 
-    metadata = dl.get_filing_metadatas("aapl/000032019323000077")
-    metadata = dl.get_filing_metadatas("320193/000032019323000077")
-    metadata = dl.get_filing_metadatas("320193/0000320193-23-000077")
-    metadata = dl.get_filing_metadatas("0000320193/0000320193-23-000077")
-    metadata = dl.get_filing_metadatas(CompanyAndAccessionNumber(ticker_or_cik="320193", accession_number="0000320193-23-000077"))
+    metadatas = dl.get_filing_metadatas("aapl/000032019323000077")
+    metadatas = dl.get_filing_metadatas("320193/000032019323000077")
+    metadatas = dl.get_filing_metadatas("320193/0000320193-23-000077")
+    metadatas = dl.get_filing_metadatas("0000320193/0000320193-23-000077")
+    metadatas = dl.get_filing_metadatas(CompanyAndAccessionNumber(ticker_or_cik="320193", accession_number="0000320193-23-000077"))
 
 Find the filing matching a SEC EDGAR Filing URL. Only CIK and Accession
 Number are used from the URL:
@@ -91,7 +91,7 @@ Number are used from the URL:
 metadatas = dl.get_filing_metadatas(
     "https://www.sec.gov/ix?doc=/Archives/edgar/data/0001067983/000119312523272204/d564412d8k.htm"
 )
-print(metadatas[0])
+print(metadatas)
 ```
 
     FilingMetadata(accession_number='0001193125-23-272204',
@@ -109,14 +109,14 @@ print(metadatas[0])
 Alternatively, you can also URLs in other formats and get the same
 answer:
 
-    metadata = dl.get_filing_metadatas("https://www.sec.gov/Archives/edgar/data/1067983/000119312523272204/d564412d8k.htm")
+    metadatas = dl.get_filing_metadatas("https://www.sec.gov/Archives/edgar/data/1067983/000119312523272204/d564412d8k.htm")
 
 Find latest filings by company ticker or CIK:
 
 ``` python
 from sec_downloader.types import RequestedFilings
 
-metadata = dl.get_filing_metadatas(
+metadatas = dl.get_filing_metadatas(
     RequestedFilings(ticker_or_cik="MSFT", form_type="10-K", limit=2)
 )
 print(metadatas)
@@ -136,9 +136,9 @@ print(metadatas)
 
 Alternatively, you can also use any of these to get the same answer:
 
-    metadata = dl.get_filing_metadatas("2/msft/10-K")
-    metadata = dl.get_filing_metadatas("2/789019/10-K")
-    metadata = dl.get_filing_metadatas("2/0000789019/10-K")
+    metadatas = dl.get_filing_metadatas("2/msft/10-K")
+    metadatas = dl.get_filing_metadatas("2/789019/10-K")
+    metadatas = dl.get_filing_metadatas("2/0000789019/10-K")
 
 The parameters `limit` and `form_type` are optional. If omitted, `limit`
 defaults to 1, and `form_type` defaults to ‘10-Q’.
@@ -161,12 +161,12 @@ print(metadatas)
 
 Alternatively, you can also use any of these to get the same answer:
 
-    metadata = dl.get_filing_metadatas("nflx")
-    metadata = dl.get_filing_metadatas("1/NFLX")
-    metadata = dl.get_filing_metadatas("NFLX/10-Q")
-    metadata = dl.get_filing_metadatas("1/NFLX/10-Q")
-    metadata = dl.get_filing_metadatas(RequestedFilings(ticker_or_cik="NFLX"))
-    metadata = dl.get_filing_metadatas(RequestedFilings(limit=1, ticker_or_cik="NFLX", form_type="10-Q"))
+    metadatas = dl.get_filing_metadatas("nflx")
+    metadatas = dl.get_filing_metadatas("1/NFLX")
+    metadatas = dl.get_filing_metadatas("NFLX/10-Q")
+    metadatas = dl.get_filing_metadatas("1/NFLX/10-Q")
+    metadatas = dl.get_filing_metadatas(RequestedFilings(ticker_or_cik="NFLX"))
+    metadatas = dl.get_filing_metadatas(RequestedFilings(limit=1, ticker_or_cik="NFLX", form_type="10-Q"))
 
 ## Download the HTML files
 
