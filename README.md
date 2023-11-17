@@ -16,19 +16,26 @@ new `sec-edgar-downloader` releases. This library partially uses
 
 Advantages over `sec-edgar-downloader`:
 
-**Flexibility in Download Process** - Tailored for choosing *what*,
-*where*, and *how* to download. - Files stored in memory for faster
-operations and no unnecessary disk clutter.
+**Flexibility in Download Process**
 
-**Separate Metadata and File Downloads** - Easily skip unneeded files. -
-Download metadata first, then selectively download files. - Option to
-save metadata for better organization.
+- Tailored for choosing *what*, *where*, and *how* to download.
+- Files stored in memory for faster operations and no unnecessary disk
+  clutter.
 
-**More Input Options** - Ticker or CIK (e.g., `AAPL`, `0000320193`) for
-latest filings. - Accession Number (e.g., `0000320193-23-000077`). Not
-supported in `sec-edgar-downloader`. - SEC EDGAR URL (e.g.,
-`https://www.sec.gov/ix?doc=/Archives/edgar/data/0001067983/000119312523272204/d564412d8k.htm`).
-Not supported in `sec-edgar-downloader`.
+**Separate Metadata and File Downloads**
+
+- Easily skip unneeded files.
+- Download metadata first, then selectively download files.
+- Option to save metadata for better organization.
+
+**More Input Options**
+
+- Ticker or CIK (e.g., `AAPL`, `0000320193`) for latest filings.
+- Accession Number (e.g., `0000320193-23-000077`). Not supported in
+  `sec-edgar-downloader`.
+- SEC EDGAR URL (e.g.,
+  `https://www.sec.gov/ix?doc=/Archives/edgar/data/0001067983/000119312523272204/d564412d8k.htm`).
+  Not supported in `sec-edgar-downloader`.
 
 # Install
 
