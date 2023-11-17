@@ -94,6 +94,3 @@ class Downloader:
             html = self.download_filing(url=metadata.primary_doc_url)
             result.append(html)
         return result
-        return result
-        return result
-        return result
