@@ -66,3 +66,31 @@ class Downloader:
     def download_filing(self, *, url: str) -> bytes:
         assert url.startswith("https://www.sec.gov/")
         return download_filing(url, self.user_agent)
+
+    def download_primary_docs(
+        self,
+        *,
+        query: Union[str, RequestedFilings, CompanyAndAccessionNumber] | None = None,
+        # Syntactic Sugar
+        ticker: Union[str, None] = None,
+        form: Union[str, None] = None,
+    ) -> list[bytes]:
+        # Syntactic Sugar
+        if query:
+            msg = (
+                "Error: Ticker or form should not be provided when query is specified."
+            )
+            assert not ticker and not form, msg
+        if ticker or form:
+            msg = (
+                "Error: Query should not be provided when ticker or form is specified."
+            )
+            assert not query, msg
+            query = f"{ticker}/{form}"
+        assert query, "Error: Either query or ticker and form must be specified."
+
+        result = []
+        for metadata in self.get_filing_metadatas(query):
+            html = self.download_filing(url=metadata.primary_doc_url)
+            result.append(html)
+        return result
