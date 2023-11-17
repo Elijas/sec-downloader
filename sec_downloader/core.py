@@ -74,7 +74,12 @@ class Downloader:
         # Syntactic Sugar
         ticker: Optional[str] = None,
         form: Optional[str] = None,
-    ) -> list[bytes]:
+    ) -> bytes:
+        """
+        Simplified interface to download a single filing.
+        To download multiple filings, save metadata, and have more control,
+        use `get_filing_metadatas()` and `download_filing()`.
+        """
         # Syntactic Sugar
         if query:
             msg = (
@@ -93,4 +98,11 @@ class Downloader:
         for metadata in self.get_filing_metadatas(query):
             html = self.download_filing(url=metadata.primary_doc_url)
             result.append(html)
-        return result
+
+        if len(result) == 0:
+            raise ValueError(f"Could not find filing for {query}")
+        if len(result) > 1:
+            raise ValueError(
+                f"Found multiple filings for {query}. Use `get_filing_metadatas()` and `download_filing() instead."
+            )
+        return result[0]
