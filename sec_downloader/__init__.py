@@ -1,4 +1,4 @@
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 from sec_downloader.core import Downloader
 from sec_downloader.download_storage import DownloadStorage, FileContent
 

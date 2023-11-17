@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Union
+from typing import Optional, Union
 
 from sec_downloader.sec_edgar_downloader_fork import (
     FilingMetadata,
@@ -70,10 +70,10 @@ class Downloader:
     def download_primary_docs(
         self,
         *,
-        query: Union[str, RequestedFilings, CompanyAndAccessionNumber] | None = None,
+        query: Optional[Union[str, RequestedFilings, CompanyAndAccessionNumber]] = None,
         # Syntactic Sugar
-        ticker: Union[str, None] = None,
-        form: Union[str, None] = None,
+        ticker: Optional[str] = None,
+        form: Optional[str] = None,
     ) -> list[bytes]:
         # Syntactic Sugar
         if query:
@@ -93,4 +93,7 @@ class Downloader:
         for metadata in self.get_filing_metadatas(query):
             html = self.download_filing(url=metadata.primary_doc_url)
             result.append(html)
+        return result
+        return result
+        return result
         return result
