@@ -143,6 +143,7 @@ Alternatively, you can also use any of these to get the same answer:
     metadata = dl.get_filing_metadatas("NFLX/10-Q")
     metadata = dl.get_filing_metadatas("1/NFLX/10-Q")
     metadata = dl.get_filing_metadatas(RequestedFilings(ticker_or_cik="NFLX"))
+    metadata = dl.get_filing_metadatas(RequestedFilings(limit=1, ticker_or_cik="NFLX", form_type="10-Q"))
 
 ## Download the HTML files
 

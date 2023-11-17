@@ -199,5 +199,3 @@ def _get_metadatas(
         raise OverflowError(msg)
 
     return found_metadatas
-
-    return found_metadatas
