@@ -40,7 +40,7 @@ Advantages over `sec-edgar-downloader`:
 # Install
 
 ``` sh
-pip install sec_downloader
+pip install sec-downloader
 ```
 
 # How to use
