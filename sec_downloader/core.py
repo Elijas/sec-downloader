@@ -1,17 +1,17 @@
 from collections import namedtuple
 from typing import Optional, Union
 
+from sec_edgar_downloader import Downloader as SecEdgarDownloader
+from sec_edgar_downloader._orchestrator import get_ticker_to_cik_mapping
+from sec_edgar_downloader._sec_gateway import download_filing
+
 from sec_downloader.sec_edgar_downloader_fork import (
     FilingMetadata,
     get_filing_metadata,
     get_latest_filings_metadata,
 )
 from sec_downloader.types import CompanyAndAccessionNumber, RequestedFilings
-from sec_edgar_downloader import Downloader as SecEdgarDownloader
-from sec_edgar_downloader._orchestrator import get_ticker_to_cik_mapping
-from sec_edgar_downloader._sec_gateway import download_filing
 
-FileContent = namedtuple("FileContent", ["path", "content"])
 DEFAULT_FILTER_PATTERN = "**/*.*"
 
 
@@ -64,7 +64,6 @@ class Downloader:
         raise ValueError(f"Invalid input: {query}")
 
     def download_filing(self, *, url: str) -> bytes:
-        assert url.startswith("https://www.sec.gov/")
         return download_filing(url, self.user_agent)
 
     def get_filing_html(
