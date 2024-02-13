@@ -1,7 +1,7 @@
 from collections import namedtuple
 from typing import Optional, Union
 
-from sec_edgar_downloader import Downloader as SecEdgarDownloader
+from sec_edgar_downloader._Downloader import Downloader as SecEdgarDownloader
 from sec_edgar_downloader._orchestrator import get_ticker_to_cik_mapping
 from sec_edgar_downloader._sec_gateway import download_filing
 
@@ -12,6 +12,7 @@ from sec_downloader.sec_edgar_downloader_fork import (
 )
 from sec_downloader.types import CompanyAndAccessionNumber, RequestedFilings
 
+FileContent = namedtuple("FileContent", ["path", "content"])
 DEFAULT_FILTER_PATTERN = "**/*.*"
 
 

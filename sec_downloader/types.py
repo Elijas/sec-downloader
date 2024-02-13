@@ -8,13 +8,13 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
-# %% ../nbs/00_types.ipynb 4
+# %% ../nbs/00_types.ipynb 3
 @dataclass
 class Ticker:
     symbol: str
     exchange: str
 
-
+# %% ../nbs/00_types.ipynb 4
 @dataclass
 class FilingMetadata:
     accession_number: str
