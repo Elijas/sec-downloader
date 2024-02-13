@@ -214,7 +214,7 @@ content = storage.get_file_contents()[0].content
 print(f"{content[:50]}...")
 ```
 
-    '<?xml version="1.0" ?><!--XBRL Document Created wi...'
+    "<?xml version='1.0' encoding='ASCII'?>\n<html xmlns..."
 
 Downloading multiple documents:
 
@@ -229,8 +229,8 @@ for path, content in storage.get_file_contents():
     print(f"Path: {path}\nContent [len={len(content)}]: {content[:30]}...\n")
 ```
 
-    ('Path: sec-edgar-filings/GOOG/10-K/0001652044-22-000019/full-submission.txt\n'
-     'Content [len=15044932]: <SEC-DOCUMENT>0001652044-22-00...\n')
+    ('Path: sec-edgar-filings/GOOG/10-K/0001652044-24-000022/full-submission.txt\n'
+     'Content [len=13927595]: <SEC-DOCUMENT>0001652044-24-00...\n')
     ('Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt\n'
      'Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...\n')
 
