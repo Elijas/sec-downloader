@@ -6,7 +6,7 @@ from collections import deque
 from typing import Optional, Union
 
 from sec_downloader.types import FilingMetadata, RequestedFilings, Ticker
-from sec_edgar_downloader import Downloader
+from sec_edgar_downloader._Downloader import Downloader
 from sec_edgar_downloader._constants import (
     AMENDS_SUFFIX,
     CIK_LENGTH,
