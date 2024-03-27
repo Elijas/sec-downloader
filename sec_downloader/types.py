@@ -35,7 +35,7 @@ class RequestedFilings:
     form_type: str = "10-Q"
     limit: int = 1
 
-    _REGEX_PATTERN = r"^(?:(\d+)/)?([^/]+)(?:/([^/]+))?$"
+    _REGEX_PATTERN = r"^(?:(\d+)/)?([^/]+)(?:/(.+))?$"
 
     @classmethod
     def from_string(cls, s: str):
