@@ -122,23 +122,23 @@ metadatas = dl.get_filing_metadatas(
 print(metadatas)
 ```
 
-    [FilingMetadata(accession_number='0000950170-23-035122',
+    [FilingMetadata(accession_number='0000950170-24-087843',
+                    form_type='10-K',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm',
+                    items='',
+                    primary_doc_description='10-K',
+                    filing_date='2024-07-30',
+                    report_date='2024-06-30',
+                    cik='0000789019',
+                    company_name='MICROSOFT CORP',
+                    tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')]),
+     FilingMetadata(accession_number='0000950170-23-035122',
                     form_type='10-K',
                     primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm',
                     items='',
                     primary_doc_description='10-K',
                     filing_date='2023-07-27',
                     report_date='2023-06-30',
-                    cik='0000789019',
-                    company_name='MICROSOFT CORP',
-                    tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')]),
-     FilingMetadata(accession_number='0001564590-22-026876',
-                    form_type='10-K',
-                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/789019/000156459022026876/msft-10k_20220630.htm',
-                    items='',
-                    primary_doc_description='10-K',
-                    filing_date='2022-07-28',
-                    report_date='2022-06-30',
                     cik='0000789019',
                     company_name='MICROSOFT CORP',
                     tickers=[Ticker(symbol='MSFT', exchange='Nasdaq')])]
@@ -157,13 +157,13 @@ metadatas = dl.get_filing_metadatas("NFLX")
 print(metadatas)
 ```
 
-    [FilingMetadata(accession_number='0001065280-23-000273',
+    [FilingMetadata(accession_number='0001065280-24-000287',
                     form_type='10-Q',
-                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/1065280/000106528023000273/nflx-20230930.htm',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/1065280/000106528024000287/nflx-20240930.htm',
                     items='',
                     primary_doc_description='10-Q',
-                    filing_date='2023-10-20',
-                    report_date='2023-09-30',
+                    filing_date='2024-10-18',
+                    report_date='2024-09-30',
                     cik='0001065280',
                     company_name='NETFLIX INC',
                     tickers=[Ticker(symbol='NFLX', exchange='Nasdaq')])]
@@ -189,7 +189,7 @@ for metadata in metadatas:
     break  # same for all filings, let's just print the first one
 ```
 
-    '<?xml version="1.0" ?><!--XBRL Document Created wi'
+    "<?xml version='1.0' encoding='ASCII'?>\n<!--XBRL Do"
 
 # Alternative implementation: Wrapper
 
@@ -214,7 +214,7 @@ content = storage.get_file_contents()[0].content
 print(f"{content[:50]}...")
 ```
 
-    "<?xml version='1.0' encoding='ASCII'?>\n<html xmlns..."
+    "<?xml version='1.0' encoding='ASCII'?>\n<!--XBRL Do..."
 
 Downloading multiple documents:
 
@@ -229,10 +229,40 @@ for path, content in storage.get_file_contents():
     print(f"Path: {path}\nContent [len={len(content)}]: {content[:30]}...\n")
 ```
 
+    ('Path: sec-edgar-filings/GOOG/10-K/0001652044-25-000014/full-submission.txt\n'
+     'Content [len=14773739]: <SEC-DOCUMENT>0001652044-25-00...\n')
     ('Path: sec-edgar-filings/GOOG/10-K/0001652044-24-000022/full-submission.txt\n'
      'Content [len=13927595]: <SEC-DOCUMENT>0001652044-24-00...\n')
-    ('Path: sec-edgar-filings/GOOG/10-K/0001652044-23-000016/full-submission.txt\n'
-     'Content [len=15264470]: <SEC-DOCUMENT>0001652044-23-00...\n')
+
+``` python
+from sec_downloader import Downloader
+dl = Downloader("MyCompanyName", "my.email@domain.com")
+metadata = dl.get_filing_metadatas("https://www.sec.gov/Archives/edgar/data/2488/000000248825000009/0001193125-10-034401-index.htm", include_amends=True)
+metadata
+```
+
+    [FilingMetadata(accession_number='0000002488-25-000009', form_type='8-K', primary_doc_url='https://www.sec.gov/Archives/edgar/data/2488/000000248825000009/amd-20250204.htm', items='2.02,7.01,9.01', primary_doc_description='8-K', filing_date='2025-02-04', report_date='2025-02-04', cik='0000002488', company_name='ADVANCED MICRO DEVICES INC', tickers=[Ticker(symbol='AMD', exchange='Nasdaq')])]
+
+# \# Frequently Asked Questions (FAQ)
+
+# 
+
+# **Q: I’m encountering a ValueError stating ‘8-K/A’ forms are not supported. How can I download “8-K/A” filings?**
+
+# 
+
+# **A:** To download amended filings such as “8-K/A”, you need to set the parameter `include_amends=True`. For example, to download [this filing](https://www.sec.gov/Archives/edgar/data/2488/000000248825000009/0001193125-10-034401-index.htm), you would use:
+
+``` python
+from sec_downloader import Downloader
+dl = Downloader("MyCompanyName", "my.email@domain.com")
+str_cik = "0000002488"
+str_acc = "0001193125-10-034401"
+metadata = dl.get_filing_metadatas(f"{str_cik}/{str_acc}", include_amends=True)
+metadata
+```
+
+    [FilingMetadata(accession_number='0001193125-10-034401', form_type='8-K', primary_doc_url='https://www.sec.gov/Archives/edgar/data/2488/000119312510034401/d8ka.htm', items='5.02', primary_doc_description='FORM 8-K/A', filing_date='2010-02-19', report_date='2010-02-16', cik='0000002488', company_name='ADVANCED MICRO DEVICES INC', tickers=[Ticker(symbol='AMD', exchange='Nasdaq')])]
 
 # Contributing
 

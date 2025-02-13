@@ -27,6 +27,7 @@ def get_filing_metadata(
     accession_number: str,
     user_agent: str,
     ticker_to_cik_mapping: dict[str, str],
+    include_amends: bool = False,
 ) -> FilingMetadata:
     if len(accession_number) == 18:
         accession_number = (
@@ -40,6 +41,7 @@ def get_filing_metadata(
         user_agent=user_agent,
         limit=1,
         accession_number=accession_number,
+        include_amends=include_amends,
     )
     if len(result) == 0:
         raise ValueError(f"Could not find filing for {accession_number}")
@@ -52,6 +54,7 @@ def get_latest_filings_metadata(
     requested: RequestedFilings,
     user_agent: str,
     ticker_to_cik_mapping: dict[str, str],
+    include_amends: bool = False,
 ) -> list[FilingMetadata]:
     cik = validate_and_convert_ticker_or_cik(
         requested.ticker_or_cik, ticker_to_cik_mapping
@@ -80,6 +83,7 @@ def get_latest_filings_metadata(
         limit=limit,
         ticker_or_cik=requested.ticker_or_cik,
         form_type=requested.form_type,
+        include_amends=include_amends,
     )
 
 
@@ -91,6 +95,7 @@ def _get_metadatas(
     ticker_or_cik: Optional[str] = None,
     accession_number: Optional[str] = None,
     form_type: Optional[str] = None,
+    include_amends: bool = False,
 ) -> list[FilingMetadata]:
     assert (
         ticker_or_cik and form_type
@@ -159,7 +164,7 @@ def _get_metadatas(
             if (
                 (form_type and form_type != this_form_type)
                 or (accession_number and accession_number != this_accession_number)
-                or is_amend
+                or (is_amend and not include_amends)
             ):
                 continue
 

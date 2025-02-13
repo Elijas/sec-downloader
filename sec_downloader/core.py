@@ -33,6 +33,8 @@ class Downloader:
     def get_filing_metadatas(
         self,
         query: Union[str, RequestedFilings, CompanyAndAccessionNumber],
+        *,
+        include_amends: bool = False,
     ) -> list[FilingMetadata]:
         if isinstance(query, (CompanyAndAccessionNumber, str)):
             if isinstance(query, str):
@@ -48,6 +50,7 @@ class Downloader:
                         accession_number=query.accession_number,
                         user_agent=self.user_agent,
                         ticker_to_cik_mapping=self._ticker_to_cik_mapping,
+                        include_amends=include_amends,
                     )
                 ]
 
@@ -59,6 +62,7 @@ class Downloader:
                 requested=query,
                 user_agent=self.user_agent,
                 ticker_to_cik_mapping=self._ticker_to_cik_mapping,
+                include_amends=include_amends,
             )
             return new_metadatas
 
