@@ -243,15 +243,15 @@ metadata
 
     [FilingMetadata(accession_number='0000002488-25-000009', form_type='8-K', primary_doc_url='https://www.sec.gov/Archives/edgar/data/2488/000000248825000009/amd-20250204.htm', items='2.02,7.01,9.01', primary_doc_description='8-K', filing_date='2025-02-04', report_date='2025-02-04', cik='0000002488', company_name='ADVANCED MICRO DEVICES INC', tickers=[Ticker(symbol='AMD', exchange='Nasdaq')])]
 
-# \# Frequently Asked Questions (FAQ)
+# Frequently Asked Questions (FAQ)
 
-# 
+**Q: I’m encountering a ValueError stating ‘8-K/A’ forms are not
+supported. How can I download “8-K/A” filings?**
 
-# **Q: I’m encountering a ValueError stating ‘8-K/A’ forms are not supported. How can I download “8-K/A” filings?**
-
-# 
-
-# **A:** To download amended filings such as “8-K/A”, you need to set the parameter `include_amends=True`. For example, to download [this filing](https://www.sec.gov/Archives/edgar/data/2488/000000248825000009/0001193125-10-034401-index.htm), you would use:
+**A:** To download amended filings such as “8-K/A”, you need to set the
+parameter `include_amends=True`. For example, to download [this
+filing](https://www.sec.gov/Archives/edgar/data/2488/000000248825000009/0001193125-10-034401-index.htm),
+you would use:
 
 ``` python
 from sec_downloader import Downloader
