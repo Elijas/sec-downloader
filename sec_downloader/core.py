@@ -8,9 +8,10 @@ from sec_edgar_downloader._sec_gateway import download_filing
 from sec_downloader.sec_edgar_downloader_fork import (
     FilingMetadata,
     get_filing_metadata,
+    get_filing_metadatas_for_accession_numbers,
     get_latest_filings_metadata,
 )
-from sec_downloader.types import CompanyAndAccessionNumber, RequestedFilings
+from sec_downloader.types import AccessionNumbers, CompanyAndAccessionNumber, RequestedFilings
 
 FileContent = namedtuple("FileContent", ["path", "content"])
 DEFAULT_FILTER_PATTERN = "**/*.*"
@@ -32,7 +33,7 @@ class Downloader:
 
     def get_filing_metadatas(
         self,
-        query: Union[str, RequestedFilings, CompanyAndAccessionNumber],
+        query: Union[str, RequestedFilings, CompanyAndAccessionNumber, AccessionNumbers],
         *,
         include_amends: bool = False,
     ) -> list[FilingMetadata]:
@@ -53,6 +54,15 @@ class Downloader:
                         include_amends=include_amends,
                     )
                 ]
+
+        if isinstance(query, AccessionNumbers):
+            return get_filing_metadatas_for_accession_numbers(
+                ticker_or_cik=query.ticker_or_cik,
+                accession_numbers=query.accession_numbers,
+                user_agent=self.user_agent,
+                ticker_to_cik_mapping=self._ticker_to_cik_mapping,
+                include_amends=include_amends,
+            )
 
         if isinstance(query, (RequestedFilings, str)):
             if isinstance(query, str):
