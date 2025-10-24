@@ -178,6 +178,51 @@ Alternatively, you can also use any of these to get the same answer:
     metadatas = dl.get_filing_metadatas(RequestedFilings(ticker_or_cik="NFLX"))
     metadatas = dl.get_filing_metadatas(RequestedFilings(limit=1, ticker_or_cik="NFLX", form_type="10-Q"))
 
+Get metadata for multiple accession numbers efficiently (bulk
+retrieval):
+
+``` python
+from sec_downloader.types import AccessionNumbers
+
+metadatas = dl.get_filing_metadatas(
+    AccessionNumbers(
+        ticker_or_cik="AAPL",
+        accession_numbers=[
+            "0000320193-23-000077",
+            "0000320193-23-000106",
+        ]
+    )
+)
+print(metadatas)
+```
+
+    [FilingMetadata(accession_number='0000320193-23-000077',
+                    form_type='10-Q',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/320193/000032019323000077/aapl-20230701.htm',
+                    items='',
+                    primary_doc_description='10-Q',
+                    filing_date='2023-08-04',
+                    report_date='2023-07-01',
+                    cik='0000320193',
+                    company_name='Apple Inc.',
+                    tickers=[Ticker(symbol='AAPL', exchange='Nasdaq')]),
+     FilingMetadata(accession_number='0000320193-23-000106',
+                    form_type='10-K',
+                    primary_doc_url='https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm',
+                    items='',
+                    primary_doc_description='10-K',
+                    filing_date='2023-11-03',
+                    report_date='2023-09-30',
+                    cik='0000320193',
+                    company_name='Apple Inc.',
+                    tickers=[Ticker(symbol='AAPL', exchange='Nasdaq')])]
+
+This is useful when you have a list of specific accession numbers you
+want to retrieve metadata for, such as when you've downloaded multiple
+filings and want to get their metadata in bulk without having to fetch
+all filings for a company and form type. All accession numbers must
+belong to the same company.
+
 ## Download the HTML files
 
 After obtaining the Primary Document URL, for example from the metadata,
