@@ -204,3 +204,118 @@ def _get_metadatas(
         raise OverflowError(msg)
 
     return found_metadatas
+
+
+def _get_metadatas_batch(
+    *,
+    cik: str,
+    user_agent: str,
+    accession_numbers: set[str],
+    include_amends: bool = False,
+) -> list[FilingMetadata]:
+    """
+    Fetch metadata for multiple accession numbers for a single CIK.
+    Optimized to make one API call per company instead of one per accession number.
+    """
+    submissions_uri = URL_SUBMISSIONS.format(
+        submission=SUBMISSION_FILE_FORMAT.format(cik=cik)
+    )
+
+    additional_submissions = None
+    found_metadatas: list[FilingMetadata] = []
+    remaining_accession_numbers = accession_numbers.copy()
+    company_tickers = None
+    company_cik = None
+    company_name = None
+
+    while len(remaining_accession_numbers) > 0:
+        resp_json = get_list_of_available_filings(submissions_uri, user_agent)
+        # First API response is different from further API responses
+        if additional_submissions is None:
+            filings_json = resp_json["filings"]["recent"]
+            additional_submissions = deque(resp_json["filings"]["files"])
+            company_tickers = [
+                Ticker(symbol=ticker, exchange=exchange)
+                for ticker, exchange in zip(
+                    resp_json["tickers"], resp_json["exchanges"]
+                )
+            ]
+            company_name = resp_json["name"]
+            company_cik = str(resp_json["cik"]).zfill(CIK_LENGTH)
+        # On second page or more of API response (for companies with >1000 filings)
+        else:
+            filings_json = resp_json
+        assert company_tickers is not None
+        assert company_name is not None
+        assert company_cik is not None
+
+        accession_numbers_list = filings_json["accessionNumber"]
+        primary_document_urls = filings_json["primaryDocument"]
+        filing_dates = filings_json["filingDate"]
+        report_dates = filings_json["reportDate"]
+        primary_doc_descriptions = filings_json["primaryDocDescription"]
+        items_list = filings_json["items"]
+        form_types = filings_json["form"]
+
+        for (
+            this_accession_number,
+            primary_doc_filename,
+            filing_date,
+            report_date,
+            primary_doc_description,
+            this_form_type,
+            items,
+        ) in zip(
+            accession_numbers_list,
+            primary_document_urls,
+            filing_dates,
+            report_dates,
+            primary_doc_descriptions,
+            form_types,
+            items_list,
+        ):
+            # Check if this is one of the requested accession numbers
+            if this_accession_number not in remaining_accession_numbers:
+                continue
+
+            is_amend = this_form_type.endswith(AMENDS_SUFFIX)
+            this_form_type = this_form_type[:-2] if is_amend else this_form_type
+
+            # Skip amended forms if not requested
+            if is_amend and not include_amends:
+                # Remove from remaining since we found it but won't include it
+                remaining_accession_numbers.discard(this_accession_number)
+                continue
+
+            td = get_to_download(cik, this_accession_number, primary_doc_filename)
+            found_metadata = FilingMetadata(
+                primary_doc_url=td.primary_doc_uri,
+                accession_number=this_accession_number,
+                tickers=company_tickers,
+                company_name=company_name,
+                filing_date=filing_date,
+                report_date=report_date,
+                primary_doc_description=primary_doc_description,
+                items=items,
+                form_type=this_form_type,
+                cik=company_cik,
+            )
+            found_metadatas.append(found_metadata)
+            remaining_accession_numbers.discard(this_accession_number)
+
+        # No more pages to fetch
+        if len(additional_submissions) == 0:
+            break
+
+        next_page = additional_submissions.popleft()["name"]
+        submissions_uri = URL_SUBMISSIONS.format(submission=next_page)
+
+    # Report any accession numbers that weren't found
+    if remaining_accession_numbers:
+        missing = ", ".join(sorted(remaining_accession_numbers))
+        raise ValueError(
+            f"Could not find {len(remaining_accession_numbers)} accession number(s) "
+            f"for CIK {cik}: {missing}"
+        )
+
+    return found_metadatas

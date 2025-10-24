@@ -9,8 +9,12 @@ from sec_downloader.sec_edgar_downloader_fork import (
     FilingMetadata,
     get_filing_metadata,
     get_latest_filings_metadata,
+    _get_metadatas_batch,
+    accession_number_re,
 )
 from sec_downloader.types import CompanyAndAccessionNumber, RequestedFilings
+from sec_edgar_downloader._utils import validate_and_convert_ticker_or_cik
+from collections import defaultdict
 
 FileContent = namedtuple("FileContent", ["path", "content"])
 DEFAULT_FILTER_PATTERN = "**/*.*"
@@ -67,6 +71,82 @@ class Downloader:
             return new_metadatas
 
         raise ValueError(f"Invalid input: {query}")
+
+    def get_filing_metadatas_batch(
+        self,
+        queries: list[Union[str, CompanyAndAccessionNumber]],
+        *,
+        include_amends: bool = False,
+    ) -> list[FilingMetadata]:
+        """
+        Efficiently fetch metadata for multiple accession numbers.
+
+        Groups accession numbers by CIK and makes one API call per company,
+        significantly reducing the number of requests compared to fetching
+        one by one.
+
+        Args:
+            queries: List of accession number queries in format:
+                - "TICKER/ACCESSION_NUMBER" (e.g., "AAPL/0000320193-23-000077")
+                - "CIK/ACCESSION_NUMBER" (e.g., "320193/0000320193-23-000077")
+                - CompanyAndAccessionNumber objects
+            include_amends: Include amended filings (e.g., 8-K/A)
+
+        Returns:
+            List of FilingMetadata objects for all requested filings
+
+        Example:
+            >>> metadatas = dl.get_filing_metadatas_batch([
+            ...     "AAPL/0000320193-23-000077",
+            ...     "AAPL/0000320193-23-000078",
+            ...     "MSFT/0000950170-24-087843",
+            ... ])
+            # Makes only 2 API calls (one for AAPL, one for MSFT)
+        """
+        if not queries:
+            return []
+
+        # Parse all queries to extract ticker_or_cik and accession_number
+        parsed_queries = []
+        for query in queries:
+            if isinstance(query, str):
+                parsed = CompanyAndAccessionNumber.from_string(query, must_match=True)
+                parsed_queries.append(parsed)
+            elif isinstance(query, CompanyAndAccessionNumber):
+                parsed_queries.append(query)
+            else:
+                raise ValueError(f"Invalid query type: {type(query)}. Expected str or CompanyAndAccessionNumber")
+
+        # Validate and normalize accession numbers, convert tickers to CIKs
+        cik_to_accession_numbers = defaultdict(set)
+        for parsed in parsed_queries:
+            # Normalize accession number format
+            accession_number = parsed.accession_number
+            if len(accession_number) == 18:
+                accession_number = (
+                    f"{accession_number[:10]}-{accession_number[10:12]}-{accession_number[12:]}"
+                )
+            if not accession_number_re.match(accession_number):
+                raise ValueError(f"Invalid Accession Number: {accession_number}")
+
+            # Convert ticker to CIK
+            cik = validate_and_convert_ticker_or_cik(
+                parsed.ticker_or_cik, self._ticker_to_cik_mapping
+            )
+            cik_to_accession_numbers[cik].add(accession_number)
+
+        # Fetch metadata for each CIK
+        all_metadatas = []
+        for cik, accession_numbers in cik_to_accession_numbers.items():
+            metadatas = _get_metadatas_batch(
+                cik=cik,
+                user_agent=self.user_agent,
+                accession_numbers=accession_numbers,
+                include_amends=include_amends,
+            )
+            all_metadatas.extend(metadatas)
+
+        return all_metadatas
 
     def download_filing(self, *, url: str) -> bytes:
         return download_filing(url, self.user_agent)

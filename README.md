@@ -178,6 +178,24 @@ Alternatively, you can also use any of these to get the same answer:
     metadatas = dl.get_filing_metadatas(RequestedFilings(ticker_or_cik="NFLX"))
     metadatas = dl.get_filing_metadatas(RequestedFilings(limit=1, ticker_or_cik="NFLX", form_type="10-Q"))
 
+Efficiently retrieve metadata for multiple specific accession numbers:
+
+Useful when you've downloaded filings in bulk and want metadata for
+specific accession numbers without making individual requests or
+fetching all filings for each company.
+
+``` python
+# Groups by CIK - makes only 2 API calls (one for AAPL, one for MSFT)
+metadatas = dl.get_filing_metadatas_batch([
+    "AAPL/0000320193-23-000077",
+    "AAPL/0000320193-24-000123",
+    "MSFT/0000950170-24-087843",
+])
+print(f"Retrieved {len(metadatas)} filings with {len(set(m.cik for m in metadatas))} API calls")
+```
+
+    Retrieved 3 filings with 2 API calls
+
 ## Download the HTML files
 
 After obtaining the Primary Document URL, for example from the metadata,
