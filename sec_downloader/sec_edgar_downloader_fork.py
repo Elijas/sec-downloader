@@ -49,6 +49,46 @@ def get_filing_metadata(
     return result[0]
 
 
+def get_filing_metadatas_for_accession_numbers(
+    *,
+    ticker_or_cik: str,
+    accession_numbers: list[str],
+    user_agent: str,
+    ticker_to_cik_mapping: dict[str, str],
+    include_amends: bool = False,
+) -> list[FilingMetadata]:
+    """
+    Get metadata for multiple accession numbers efficiently.
+    All accession numbers must belong to the same company (ticker_or_cik).
+    """
+    if not accession_numbers:
+        return []
+    
+    # Normalize accession numbers
+    normalized_accession_numbers = []
+    for accession_number in accession_numbers:
+        if len(accession_number) == 18:
+            accession_number = (
+                f"{accession_number[:10]}-{accession_number[10:12]}-{accession_number[12:]}"
+            )
+        if not accession_number_re.match(accession_number):
+            raise ValueError(f"Invalid Accession Number: {accession_number}")
+        normalized_accession_numbers.append(accession_number)
+    
+    cik = validate_and_convert_ticker_or_cik(ticker_or_cik, ticker_to_cik_mapping)
+    
+    # Get metadata for all accession numbers in bulk
+    result = _get_metadatas(
+        cik=cik,
+        user_agent=user_agent,
+        limit=len(normalized_accession_numbers),
+        accession_numbers=normalized_accession_numbers,
+        include_amends=include_amends,
+    )
+    
+    return result
+
+
 def get_latest_filings_metadata(
     *,
     requested: RequestedFilings,
@@ -94,13 +134,14 @@ def _get_metadatas(
     limit: int,
     ticker_or_cik: Optional[str] = None,
     accession_number: Optional[str] = None,
+    accession_numbers: Optional[list[str]] = None,
     form_type: Optional[str] = None,
     include_amends: bool = False,
 ) -> list[FilingMetadata]:
     assert (
         ticker_or_cik and form_type
-    ) or accession_number, (
-        "Either ticker or CIK and form type or accession number must be provided"
+    ) or accession_number or accession_numbers, (
+        "Either ticker or CIK and form type or accession number(s) must be provided"
     )
 
     submissions_uri = URL_SUBMISSIONS.format(
@@ -151,7 +192,7 @@ def _get_metadatas(
             this_form_type,
             items,
         ) in zip(
-            accession_numbers,
+            filings_json["accessionNumber"],
             primary_document_urls,
             filing_dates,
             report_dates,
@@ -164,6 +205,7 @@ def _get_metadatas(
             if (
                 (form_type and form_type != this_form_type)
                 or (accession_number and accession_number != this_accession_number)
+                or (accession_numbers and this_accession_number not in accession_numbers)
                 or (is_amend and not include_amends)
             ):
                 continue
@@ -195,7 +237,11 @@ def _get_metadatas(
         submissions_uri = URL_SUBMISSIONS.format(submission=next_page)
 
     requested_form = f" of type {form_type}" if form_type else ""
-    error_context = f"{accession_number or ticker_or_cik}{requested_form}"
+    if accession_numbers:
+        error_context = f"{ticker_or_cik} with accession numbers {accession_numbers}"
+    else:
+        error_context = f"{accession_number or ticker_or_cik}{requested_form}"
+    
     if not found_metadatas:
         msg = f"Could not find any filings: {error_context}"
         raise ValueError(msg)
